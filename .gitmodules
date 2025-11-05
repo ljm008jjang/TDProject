@@ -1,0 +1,3 @@
+[submodule "Plugins/CoreFramework"]
+	path = Plugins/CoreFramework
+	url = https://github.com/ljm008jjang/Unreal_CoreFramework.git
