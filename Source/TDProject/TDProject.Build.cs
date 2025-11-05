@@ -20,10 +20,10 @@ public class TDProject : ModuleRules
 			"GameplayStateTreeModule",
 			"Niagara",
 			"UMG",
-			"Slate"
+			"Slate",
+			"PubSub",
+			"GameplayMessageRuntime"
 		});
-
-		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"TDProject",

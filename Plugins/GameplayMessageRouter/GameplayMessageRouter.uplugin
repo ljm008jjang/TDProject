@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "Gameplay Messages",
+	"FriendlyName": "Gameplay Message Subsystem",
 	"Description": "A subsystem that allows registering for and sending messages between unconnected gameplay objects.",
 	"Category": "Gameplay",
 	"CreatedBy": "Epic Games, Inc.",
@@ -10,7 +10,7 @@
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"EnabledByDefault": false,
+	"EnabledByDefault": true,
 	"CanContainContent": false,
 	"IsBetaVersion": true,
 	"Installed": false,
@@ -31,6 +31,5 @@
 			"Name": "GameplayTagsEditor",
 			"Enabled": true
 		}
-	],
-	"IsExperimentalVersion": false
+	]
 }
