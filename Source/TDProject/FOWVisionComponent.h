@@ -34,17 +34,24 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Material")
 	UMaterialParameterCollection* MaterialParameterCollection;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
-	int32 NumTrace;
+	int32 NumTrace = 60;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
-	float DegreePerTrace;
+	float TraceLineDistance = 1500.0f;
+	/** 전방 시야각을 제외한 360도 원형 영역에서 사용할 짧은 트레이스 거리 */
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
-	float TraceDistance;
+	float TraceCircleDistance = 500.0f;
+	/** 전방 시야각의 총 각도 (예: 90도) */
+	UPROPERTY(EditAnywhere, Category = "FOW", meta = (UIMin = "0.0", UIMax = "360.0"))
+	float VisionConeAngle = 90.0f;
 	UPROPERTY()
 	TArray<FVector> TraceResults;
 	UPROPERTY()
 	TArray<FCanvasUVTri> CanvasTriangles;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* TextureRenderTarget2D;
+
+	UPROPERTY()
+	TSet<AActor*> PreviouslyVisibleActors;
 
 	void SetMaterialParameterCollectionParameter();
 	void CreateCone();
