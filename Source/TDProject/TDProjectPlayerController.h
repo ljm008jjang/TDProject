@@ -27,10 +27,11 @@ protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
+	
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MoveAction;
+
+	virtual void Tick(float DeltaSeconds) override;
 public:
 
 	/** Constructor */
@@ -44,6 +45,8 @@ protected:
 private:
 	/** Input handlers */
 	void OnMove(const FInputActionValue& Value);
+
+	void RotateToCursor();
 
 };
 
