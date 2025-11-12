@@ -49,14 +49,18 @@ private:
 	TArray<FCanvasUVTri> CanvasTriangles;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* TextureRenderTarget2D;
-
 	UPROPERTY()
 	TSet<AActor*> PreviouslyVisibleActors;
+	float WorldToTextureScale;
+	FVector2D TextureHalfSize;
 
 	void SetMaterialParameterCollectionParameter();
 	void CreateCone();
 	void PrepareTrianglesForCanvas();
 	void DrawTriangles();
+	//void DrawTriangles();
 
+public:
+	void SetTraceLineDistance(int32 NewTraceLineDistance);
 		
 };

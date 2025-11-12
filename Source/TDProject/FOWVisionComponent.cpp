@@ -27,7 +27,7 @@ void UFOWVisionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	SetTraceLineDistance(TraceLineDistance);
 }
 
 
@@ -132,7 +132,7 @@ void UFOWVisionComponent::CreateCone()
 			TraceResults.Add(EndPoint + RotatedVector * 10.0f); // 10.0f 오프셋
 		}
 
-		DrawDebugLine(World, StartPoint, ActualEndPoint, LineColor, false, 0.0f, 0, 1.0f);
+		//DrawDebugLine(World, StartPoint, ActualEndPoint, LineColor, false, 0.0f, 0, 1.0f);
 	}
 
 	// --- (액터 보임/숨김 처리는 기존과 동일) ---
@@ -163,23 +163,6 @@ void UFOWVisionComponent::PrepareTrianglesForCanvas()
 	{
 		return;
 	}
-
-	const FVector2D TextureHalfSize(TextureRenderTarget2D->SizeX * 0.5f, TextureRenderTarget2D->SizeY * 0.5f);
-	// 월드 좌표를 텍스처 좌표로 변환하기 위한 스케일 값입니다.
-	// 가장 긴 탐지 거리가 텍스처의 절반 크기에 매핑되도록 합니다.
-	// Clamp 문제로 인해 시야가 무한히 확장되는 것을 막기 위해, 텍스처 크기의 95%만 사용하도록 스케일링하여
-	// 5%의 안전 여유 공간(검은색 테두리)을 남깁니다.
-	const float SafeZoneScale = 0.95f;
-	const float WorldToTextureScale = (TextureHalfSize.X * SafeZoneScale) / TraceLineDistance;
-
-	if (MaterialParameterCollection == nullptr)
-	{
-		return;
-	}
-
-	FName ParameterName = FName("WorldToTextureScale");
-	UKismetMaterialLibrary::SetScalarParameterValue(this, MaterialParameterCollection, ParameterName,
-	                                                WorldToTextureScale);
 
 	// 삼각형의 중심점은 텍스처의 중앙입니다.
 	const FVector2D CenterPos = TextureHalfSize;
@@ -238,4 +221,26 @@ void UFOWVisionComponent::DrawTriangles()
 			Context // 아까 받은 컨텍스트
 		);
 	}
+}
+
+void UFOWVisionComponent::SetTraceLineDistance(int32 NewTraceLineDistance)
+{
+	TraceLineDistance = NewTraceLineDistance;
+	if (MaterialParameterCollection == nullptr || TextureRenderTarget2D == nullptr)
+	{
+		return;
+	}
+
+	TextureHalfSize = FVector2D(TextureRenderTarget2D->SizeX * 0.5f, TextureRenderTarget2D->SizeY * 0.5f);
+
+	// 월드 좌표를 텍스처 좌표로 변환하기 위한 스케일 값입니다.
+	// 가장 긴 탐지 거리가 텍스처의 절반 크기에 매핑되도록 합니다.
+	// Clamp 문제로 인해 시야가 무한히 확장되는 것을 막기 위해, 텍스처 크기의 95%만 사용하도록 스케일링하여
+	// 5%의 안전 여유 공간(검은색 테두리)을 남깁니다.
+	const float SafeZoneScale = 0.95f;
+	WorldToTextureScale = (TextureHalfSize.X * SafeZoneScale) / TraceLineDistance;
+
+	FName ParameterName = FName("WorldToTextureScale");
+	UKismetMaterialLibrary::SetScalarParameterValue(this, MaterialParameterCollection, ParameterName,
+	                                                WorldToTextureScale);
 }
