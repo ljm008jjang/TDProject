@@ -29,10 +29,12 @@ public:
 	
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UDecalComponent* DecalComponent;
-	UPROPERTY(EditAnywhere, Category = "Material")
+	UPROPERTY(EditAnywhere, Category = "FOWParameter")
 	UMaterialParameterCollection* MaterialParameterCollection;
+	UPROPERTY(Transient) // 저장할 필요 없음
+	UMaterialInstanceDynamic* DecalMID;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
 	int32 NumTrace = 60;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
@@ -41,13 +43,14 @@ private:
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
 	float TraceCircleDistance = 500.0f;
 	/** 전방 시야각의 총 각도 (예: 90도) */
-	UPROPERTY(EditAnywhere, Category = "FOW", meta = (UIMin = "0.0", UIMax = "360.0"))
+	UPROPERTY(EditAnywhere, Category = "FOWParameter", meta = (UIMin = "0.0", UIMax = "360.0"))
 	float VisionConeAngle = 90.0f;
 	UPROPERTY()
 	TArray<FVector> TraceResults;
 	UPROPERTY()
 	TArray<FCanvasUVTri> CanvasTriangles;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
+	/** 각 클라이언트별로 동적으로 생성되는 렌더 타겟입니다. */
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* TextureRenderTarget2D;
 	UPROPERTY()
 	TSet<AActor*> PreviouslyVisibleActors;

@@ -6,7 +6,6 @@
 #include "FogOfWarInterface.h"
 #include "Components/DecalComponent.h"
 #include "Engine/Canvas.h"
-#include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetRenderingLibrary.h"
 
 // Sets default values for this component's properties
@@ -26,6 +25,34 @@ UFOWVisionComponent::UFOWVisionComponent()
 void UFOWVisionComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	const APawn* OwningPawn = Cast<APawn>(GetOwner());
+
+	if ((OwningPawn && OwningPawn->IsLocallyControlled()) == false)
+	{
+		// 로컬 플레이어가 아니면 데칼을 숨깁니다.
+		DestroyComponent();
+		DecalComponent->DestroyComponent();
+		return;
+	}
+
+
+	if (DecalComponent && OwningPawn && OwningPawn->IsLocallyControlled())
+	{
+		// 1. 각 클라이언트마다 고유한 렌더 타겟을 동적으로 생성합니다.
+		// 2. 템플릿의 모든 설정을 복사하여 고유한 렌더 타겟 인스턴스를 생성합니다.
+		TextureRenderTarget2D = DuplicateObject<UTextureRenderTarget2D>(TextureRenderTarget2D, this);
+
+
+		// 2. 데칼의 머티리얼에 대한 동적 인스턴스를 생성합니다.
+		DecalMID = DecalComponent->CreateDynamicMaterialInstance();
+
+		// 3. 생성된 DecalMID가 방금 만든 고유한 렌더 타겟을 참조하도록 설정합니다.
+		//    (머티리얼에 'FOWTexture'라는 이름의 Texture2D 파라미터가 있어야 합니다)
+		if (DecalMID && TextureRenderTarget2D)
+		{
+			DecalMID->SetTextureParameterValue(FName("FOWTexture"), TextureRenderTarget2D);
+		}
+	}
 
 	SetTraceLineDistance(TraceLineDistance);
 }
@@ -45,7 +72,7 @@ void UFOWVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UFOWVisionComponent::SetMaterialParameterCollectionParameter()
 {
-	if (MaterialParameterCollection == nullptr)
+	if (DecalMID == nullptr)
 	{
 		return;
 	}
@@ -53,7 +80,7 @@ void UFOWVisionComponent::SetMaterialParameterCollectionParameter()
 	FName ParameterName = FName("PlayerPosition");
 	FLinearColor NewValue = FLinearColor(GetComponentLocation());
 
-	UKismetMaterialLibrary::SetVectorParameterValue(this, MaterialParameterCollection, ParameterName, NewValue);
+	DecalMID->SetVectorParameterValue(ParameterName, NewValue);
 }
 
 void UFOWVisionComponent::CreateCone()
@@ -226,7 +253,7 @@ void UFOWVisionComponent::DrawTriangles()
 void UFOWVisionComponent::SetTraceLineDistance(int32 NewTraceLineDistance)
 {
 	TraceLineDistance = NewTraceLineDistance;
-	if (MaterialParameterCollection == nullptr || TextureRenderTarget2D == nullptr)
+	if (DecalMID == nullptr || TextureRenderTarget2D == nullptr)
 	{
 		return;
 	}
@@ -241,6 +268,5 @@ void UFOWVisionComponent::SetTraceLineDistance(int32 NewTraceLineDistance)
 	WorldToTextureScale = (TextureHalfSize.X * SafeZoneScale) / TraceLineDistance;
 
 	FName ParameterName = FName("WorldToTextureScale");
-	UKismetMaterialLibrary::SetScalarParameterValue(this, MaterialParameterCollection, ParameterName,
-	                                                WorldToTextureScale);
+	DecalMID->SetScalarParameterValue(ParameterName, WorldToTextureScale);
 }
