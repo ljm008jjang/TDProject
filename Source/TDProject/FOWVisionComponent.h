@@ -50,7 +50,7 @@ private:
 	UPROPERTY()
 	TArray<FCanvasUVTri> CanvasTriangles;
 	/** 각 클라이언트별로 동적으로 생성되는 렌더 타겟입니다. */
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UTextureRenderTarget2D* TextureRenderTarget2D;
 	UPROPERTY()
 	TSet<AActor*> PreviouslyVisibleActors;
