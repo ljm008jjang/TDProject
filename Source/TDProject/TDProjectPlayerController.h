@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TDProjectPlayerController.generated.h"
 
+struct FInputActionValue;
 class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
@@ -23,39 +24,13 @@ class ATDProjectPlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
-
-	/** Time Threshold to know if it was a short press */
-	UPROPERTY(EditAnywhere, Category="Input")
-	float ShortPressThreshold;
-
-	/** FX Class that we will spawn when clicking */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UNiagaraSystem* FXCursor;
-
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputMappingContext* DefaultMappingContext;
-	
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* SetDestinationClickAction;
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* SetDestinationTouchAction;
-
-	/** True if the controlled character should navigate to the mouse cursor. */
-	uint32 bMoveToMouseCursor : 1;
-
-	/** Set to true if we're using touch input */
-	uint32 bIsTouch : 1;
-
-	/** Saved location of the character movement destination */
-	FVector CachedDestination;
-
-	/** Time that the click input has been pressed */
-	float FollowTime = 0.0f;
-
+	UInputAction* MoveAction;
 public:
 
 	/** Constructor */
@@ -65,13 +40,10 @@ protected:
 
 	/** Initialize input bindings */
 	virtual void SetupInputComponent() override;
-	
+
+private:
 	/** Input handlers */
-	void OnInputStarted();
-	void OnSetDestinationTriggered();
-	void OnSetDestinationReleased();
-	void OnTouchTriggered();
-	void OnTouchReleased();
+	void OnMove(const FInputActionValue& Value);
 
 };
 
