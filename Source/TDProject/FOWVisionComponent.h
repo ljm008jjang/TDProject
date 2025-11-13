@@ -7,7 +7,6 @@
 #include "FOWVisionComponent.generated.h"
 
 class UDecalComponent;
-class UMaterialParameterCollection;
 class TextureRenderTarget2D;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -31,12 +30,10 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FOWParameter", meta = (AllowPrivateAccess = "true"))
 	UDecalComponent* DecalComponent;
-	UPROPERTY(EditAnywhere, Category = "FOWParameter")
-	UMaterialParameterCollection* MaterialParameterCollection;
 	UPROPERTY(Transient) // 저장할 필요 없음
 	UMaterialInstanceDynamic* DecalMID;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
-	int32 NumTrace = 60;
+	int32 NumTrace = 360;
 	UPROPERTY(EditAnywhere, Category = "FOWParameter")
 	float TraceLineDistance = 1500.0f;
 	/** 전방 시야각을 제외한 360도 원형 영역에서 사용할 짧은 트레이스 거리 */
@@ -57,7 +54,7 @@ private:
 	float WorldToTextureScale;
 	FVector2D TextureHalfSize;
 
-	void SetMaterialParameterCollectionParameter();
+	void SetMaterialParameter();
 	void CreateCone();
 	void PrepareTrianglesForCanvas();
 	void DrawTriangles();
@@ -65,5 +62,9 @@ private:
 
 public:
 	void SetTraceLineDistance(int32 NewTraceLineDistance);
+	void SetDecalComponent(UDecalComponent* NewDecalComponent)
+	{
+		DecalComponent = NewDecalComponent;
+	}
 		
 };

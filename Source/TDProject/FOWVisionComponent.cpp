@@ -15,9 +15,9 @@ UFOWVisionComponent::UFOWVisionComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	DecalComponent = CreateDefaultSubobject<UDecalComponent>("FOWDecal");
-	DecalComponent->SetupAttachment(this);
-	// ...
+
+	/*DecalComponent = CreateDefaultSubobject<UDecalComponent>("FOWDecal");
+	DecalComponent->SetupAttachment(this);*/
 }
 
 
@@ -25,38 +25,49 @@ UFOWVisionComponent::UFOWVisionComponent()
 void UFOWVisionComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
 	const APawn* OwningPawn = Cast<APawn>(GetOwner());
 
-	if ((OwningPawn && OwningPawn->IsLocallyControlled()) == false)
+	/*if ((OwningPawn && OwningPawn->IsLocallyControlled()) == false)
 	{
 		// 로컬 플레이어가 아니면 데칼을 숨깁니다.
 		DestroyComponent();
-		DecalComponent->DestroyComponent();
+		if (DecalComponent)
+		{
+			DecalComponent->DestroyComponent();
+		}
+		return;
+	}*/
+
+	// 1. 각 클라이언트마다 고유한 렌더 타겟을 동적으로 생성합니다.
+	// 2. 템플릿의 모든 설정을 복사하여 고유한 렌더 타겟 인스턴스를 생성합니다.
+	//    이렇게 하면 원본 템플릿 프로퍼티를 덮어쓰지 않아 안전합니다.
+	if (TextureRenderTarget2D == nullptr)
+	{
 		return;
 	}
 
+	UTextureRenderTarget2D* RenderTargetInstance = DuplicateObject<UTextureRenderTarget2D>(TextureRenderTarget2D, this);
+	TextureRenderTarget2D = RenderTargetInstance; // 프로퍼티가 새 인스턴스를 가리키도록 업데이트합니다.
 
-	if (DecalComponent && OwningPawn && OwningPawn->IsLocallyControlled())
+	// 2. 데칼의 머티리얼에 대한 동적 인스턴스를 생성합니다.
+	if (DecalComponent == nullptr)
 	{
-		// 1. 각 클라이언트마다 고유한 렌더 타겟을 동적으로 생성합니다.
-		// 2. 템플릿의 모든 설정을 복사하여 고유한 렌더 타겟 인스턴스를 생성합니다.
-		TextureRenderTarget2D = DuplicateObject<UTextureRenderTarget2D>(TextureRenderTarget2D, this);
-
-
-		// 2. 데칼의 머티리얼에 대한 동적 인스턴스를 생성합니다.
-		DecalMID = DecalComponent->CreateDynamicMaterialInstance();
-
-		// 3. 생성된 DecalMID가 방금 만든 고유한 렌더 타겟을 참조하도록 설정합니다.
-		//    (머티리얼에 'FOWTexture'라는 이름의 Texture2D 파라미터가 있어야 합니다)
-		if (DecalMID && TextureRenderTarget2D)
-		{
-			DecalMID->SetTextureParameterValue(FName("FOWTexture"), TextureRenderTarget2D);
-		}
+		return;
 	}
+	DecalMID = DecalComponent->CreateDynamicMaterialInstance();
+
+	// 3. 생성된 DecalMID가 방금 만든 고유한 렌더 타겟을 참조하도록 설정합니다.
+	//    (머티리얼에 'FOWTexture'라는 이름의 Texture2D 파라미터가 있어야 합니다)
+	if (DecalMID == nullptr)
+	{
+		return;
+	}
+
+	DecalMID->SetTextureParameterValue(FName("FOWTexture"), TextureRenderTarget2D);
 
 	SetTraceLineDistance(TraceLineDistance);
 }
-
 
 // Called every frame
 void UFOWVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -64,13 +75,13 @@ void UFOWVisionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SetMaterialParameterCollectionParameter();
+	SetMaterialParameter();
 	CreateCone();
 	PrepareTrianglesForCanvas();
 	DrawTriangles();
 }
 
-void UFOWVisionComponent::SetMaterialParameterCollectionParameter()
+void UFOWVisionComponent::SetMaterialParameter()
 {
 	if (DecalMID == nullptr)
 	{
@@ -110,13 +121,19 @@ void UFOWVisionComponent::CreateCone()
 
 		// 2. 현재 각도가 전방 시야각 내에 있는지 확인
 		// 각도를 -180 ~ +180 범위로 변환하여 전방(0도)을 기준으로 쉽게 비교
-		float AngleDelta = CurrentRelativeAngle;
+		//float AngleDelta = CurrentRelativeAngle;
+		float AngleDelta = CurrentRelativeAngle - ActorRotation.Yaw;
 		if (AngleDelta > 180.0f)
 		{
 			AngleDelta -= 360.0f; // 예: 350도 -> -10도
 		}
+		else if (AngleDelta < -180.0f)
+		{
+			AngleDelta += 360.0f; // 예: -190도 -> 170도
+		}
 
 		// AngleDelta의 절대값이 절반 시야각보다 작거나 같으면 전방 시야임
+
 		bool bIsInVisionCone = FMath::Abs(AngleDelta) <= HalfVisionConeAngle;
 
 		// 3. 조건에 맞는 트레이스 거리 선택
@@ -124,8 +141,10 @@ void UFOWVisionComponent::CreateCone()
 
 		// 4. 이 트레이스의 최종 월드 회전값 계산
 		// (액터의 현재 회전값 + 이 트레이스의 상대 각도)
-		FRotator RayRotation = ActorRotation;
-		RayRotation.Yaw += CurrentRelativeAngle;
+		/*FRotator RayRotation = ActorRotation;
+		RayRotation.Yaw += CurrentRelativeAngle;*/
+		const FRotator RayRotation(0.f, CurrentRelativeAngle, 0.f);
+
 
 		// 5. 최종 방향 벡터 및 끝점 계산
 		FVector RotatedVector = RayRotation.Vector(); // 정규화된 방향 벡터

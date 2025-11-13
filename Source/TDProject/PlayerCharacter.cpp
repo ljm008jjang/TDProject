@@ -5,6 +5,7 @@
 
 #include "FOWVisionComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/DecalComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -26,15 +27,27 @@ APlayerCharacter::APlayerCharacter()
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	TopDownCameraComponent->bUsePawnControlRotation = false;\
+	TopDownCameraComponent->bUsePawnControlRotation = false;
 
 	FOWVisionComponent = CreateDefaultSubobject<UFOWVisionComponent>(TEXT("FOWVision"));
 	FOWVisionComponent->SetupAttachment(RootComponent);
+
+	
+	DecalComponent = CreateDefaultSubobject<UDecalComponent>("FOWDecal");
+	DecalComponent->SetupAttachment(RootComponent);
+	FOWVisionComponent->SetDecalComponent(DecalComponent);
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (IsLocallyControlled() == false)
+	{
+		// 로컬 플레이어가 아니면 데칼을 숨깁니다.
+		DecalComponent->DestroyComponent();
+		FOWVisionComponent->DestroyComponent();
+	}
 
 	// stub
 }

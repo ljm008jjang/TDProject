@@ -26,6 +26,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	class UFOWVisionComponent* FOWVisionComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	class UDecalComponent* DecalComponent;
+
 public:
 
 	/** Constructor */
